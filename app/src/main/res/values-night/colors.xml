@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="surface">#121212</color>
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#B3FFFFFF</color>
+    <color name="divider_light">#2E2E2E</color>
+    <color name="card_surface">#1E1E1E</color>
+    <color name="gradient_start">#101317</color>
+    <color name="gradient_end">#0C1114</color>
+    <color name="brand_blue">#278FE5</color>
+</resources>

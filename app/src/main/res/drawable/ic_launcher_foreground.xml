@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- White background circle for better contrast -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,20C35.775,20 21,34.775 21,53C21,71.225 35.775,86 54,86C72.225,86 87,71.225 87,53C87,34.775 72.225,20 54,20Z"/>
+    <!-- Task/Planning icon in brand blue -->
+    <path
+        android:fillColor="@color/brand_blue"
+        android:pathData="M42,38H66V44H42V38ZM42,48H66V54H42V48ZM42,58H60V64H42V58ZM36,38H40V44H36V38ZM36,48H40V54H36V48ZM36,58H40V64H36V58Z"/>
+</vector>

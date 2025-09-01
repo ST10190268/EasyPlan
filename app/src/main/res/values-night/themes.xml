@@ -1,0 +1,10 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.EasyPlan" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/brand_blue</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="materialButtonStyle">@style/Widget.EasyPlan.Button.Primary</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.EasyPlan.Button.Outlined</item>
+    </style>
+</resources>

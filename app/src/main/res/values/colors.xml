@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Brand colors -->
+    <color name="brand_blue">#278FE5</color>
+    <color name="brand_blue_dark">#1F78C0</color>
+    <color name="brand_blue_light">#57AEF0</color>
+    <color name="brand_blue_ultra_light">#E3F2FD</color>
+    <color name="brand_blue_accent">#40278FE5</color>
+    <color name="brand_blue_glow">#60278FE5</color>
+
+    <!-- Gradient colors -->
+    <color name="gradient_start">#F8FBFF</color>
+    <color name="gradient_end">#E8F4FD</color>
+
+    <!-- Text/Input helpers -->
+    <color name="text_primary">#FF111111</color>
+    <color name="text_secondary">#99000000</color>
+    <color name="input_hint">#7F000000</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="card_surface">#FEFEFE</color>
+
+    <!-- Premium card colors -->
+    <color name="glass_surface">#F5FFFFFF</color>
+    <color name="card_primary">#FFFFFF</color>
+    <color name="card_secondary">#FEFFFE</color>
+    <color name="hero_card_background">#FFFFFF</color>
+
+    <!-- Shadow and elevation -->
+    <color name="shadow_light">#1A000000</color>
+    <color name="divider_light">#E0E0E0</color>
+</resources>

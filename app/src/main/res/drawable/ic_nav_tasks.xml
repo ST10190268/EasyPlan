@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Simple checklist icon -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M3,5H21V7H3z"/>
+    <path
+        android:fillColor="#000000"
+        android:pathData="M3,11H21V13H3z"/>
+    <path
+        android:fillColor="#000000"
+        android:pathData="M3,17H14V19H3z"/>
+    <path
+        android:fillColor="#000000"
+        android:pathData="M16.5,16 l1.5,1.5 3.0,-3.0 1.4,1.4 -4.4,4.4 -2.9,-2.9z"/>
+</vector>
