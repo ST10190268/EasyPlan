@@ -36,7 +36,10 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Initialize sample tasks
+        // Load tasks from Firestore when authenticated; fallback to samples
+        TaskManager.loadTasksForUser {
+            updateTasksForSelectedDate()
+        }
         TaskManager.initializeSampleTasks()
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)

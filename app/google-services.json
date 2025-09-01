@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "135975656866",
+    "project_id": "easyplan-56332",
+    "storage_bucket": "easyplan-56332.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:135975656866:android:3b1690d9aef207380466fb",
+        "android_client_info": {
+          "package_name": "com.easyplan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "135975656866-h8fr5vq32usc6fa7344vips8rqg8tq50.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8Z4AING33LxR7eFgCLswqnS-BGUJ0JBw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "135975656866-h8fr5vq32usc6fa7344vips8rqg8tq50.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+

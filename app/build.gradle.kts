@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.google.gms)
 }
 
 android {
@@ -36,6 +37,12 @@ android {
 }
 
 dependencies {
+    // Firebase BoM manages versions
+    implementation(platform(libs.firebase.bom))
+    // Analytics + Auth + Firestore
+    implementation(libs.firebase.analytics.ktx)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.firestore.ktx)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
