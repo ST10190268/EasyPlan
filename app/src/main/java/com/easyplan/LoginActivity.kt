@@ -89,6 +89,15 @@ class LoginActivity : AppCompatActivity() {
 
         // Enable edge-to-edge display for modern Android UI
         enableEdgeToEdge()
+
+        // Check if user is already logged in - if so, skip login UI setup
+        // onStart() will handle biometric prompt or direct navigation
+        if (auth.currentUser != null) {
+            Log.d(TAG, "onCreate: User already logged in (${auth.currentUser?.uid}), skipping UI setup")
+            setContentView(R.layout.activity_login) // Still need to set content view for onStart()
+            return
+        }
+
         setContentView(R.layout.activity_login)
 
         // Configure Google Sign-In
@@ -181,6 +190,13 @@ class LoginActivity : AppCompatActivity() {
                         } else {
                             Toast.makeText(this, getString(R.string.success_login), Toast.LENGTH_SHORT).show()
                         }
+
+                        // Auto-enable biometrics if available and not already enabled
+                        if (BiometricHelper.isBiometricAvailable(this) && !BiometricHelper.isEnabled(this)) {
+                            BiometricHelper.setEnabled(this, true)
+                            Log.i(TAG, "Auto-enabled biometrics for user: ${auth.currentUser?.uid}")
+                        }
+
                         navigateToMain()
                     } else {
                         Log.e(TAG, "Login failed", task.exception)
@@ -227,6 +243,13 @@ class LoginActivity : AppCompatActivity() {
                     val user = auth.currentUser
                     val name = user?.displayName ?: ""
                     Toast.makeText(this, getString(R.string.success_login_user, name), Toast.LENGTH_SHORT).show()
+
+                    // Auto-enable biometrics if available and not already enabled
+                    if (BiometricHelper.isBiometricAvailable(this) && !BiometricHelper.isEnabled(this)) {
+                        BiometricHelper.setEnabled(this, true)
+                        Log.i(TAG, "Auto-enabled biometrics for user: ${auth.currentUser?.uid}")
+                    }
+
                     navigateToMain()
                 } else {
                     Log.e(TAG, "firebaseAuthWithGoogle: Sign-In failed", task.exception)
