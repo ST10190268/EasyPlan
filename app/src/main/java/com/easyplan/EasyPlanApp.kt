@@ -11,7 +11,7 @@ import com.easyplan.util.LanguageManager
 import com.easyplan.util.TaskManager
 
 /**
- * EasyPlanApp - Initializes global utilities (Locale, TaskManager, notifications).
+ * Application entry that wires Locale, Room/TaskManager and notification channels once.
  */
 class EasyPlanApp : Application() {
 

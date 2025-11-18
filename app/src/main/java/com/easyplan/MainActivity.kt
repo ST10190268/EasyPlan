@@ -140,6 +140,7 @@ class MainActivity : AppCompatActivity() {
     private var selectedDate = Date()
     private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    private var lockAppOnResume = false
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -240,11 +241,36 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (lockAppOnResume && BiometricHelper.shouldPromptForBiometrics(this)) {
+            enforceBiometricLock()
+        } else {
+            lockAppOnResume = false
+        }
         TaskManager.syncPendingTasks {
             runOnUiThread {
                 updateOfflineStatusText(findViewById(R.id.tvOfflineStatus))
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        lockAppOnResume = BiometricHelper.shouldPromptForBiometrics(this)
+    }
+
+    private fun enforceBiometricLock() {
+        val prompt = BiometricHelper.createPrompt(this, {
+            lockAppOnResume = false
+        }) { error ->
+            lockAppOnResume = false
+            Toast.makeText(
+                this,
+                error ?: getString(R.string.biometric_unlock_failed),
+                Toast.LENGTH_LONG
+            ).show()
+            finish()
+        }
+        prompt.authenticate(BiometricHelper.buildPromptInfo(this))
     }
 
     private fun setupTasksListeners() {
@@ -258,9 +284,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<View>(R.id.cardPlanWeek)?.setOnClickListener {
-            // Switch to calendar tab
+            Toast.makeText(this, getString(R.string.toast_plan_week), Toast.LENGTH_SHORT).show()
             findViewById<BottomNavigationView>(R.id.bottom_nav)?.selectedItemId = R.id.nav_calendar
-            Toast.makeText(this, "Opening calendar to plan your week", Toast.LENGTH_SHORT).show()
         }
 
         // Refresh Tasks tab sections
@@ -425,7 +450,7 @@ class MainActivity : AppCompatActivity() {
         saveButton?.setOnClickListener {
             val title = titleInput?.text?.toString()?.trim()
             if (title.isNullOrEmpty()) {
-                Toast.makeText(this, "Please enter a task title", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.error_task_title_required), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -511,7 +536,7 @@ class MainActivity : AppCompatActivity() {
         biometricSwitch?.setOnCheckedChangeListener(null)
         biometricSwitch?.isChecked = BiometricHelper.isEnabled(this)
         biometricSwitch?.setOnCheckedChangeListener { _, isChecked ->
-            handleBiometricToggle(isChecked)
+            handleBiometricToggle(isChecked, biometricSwitch)
         }
 
         val notificationSwitch = findViewById<MaterialSwitch>(R.id.switchNotifications)
@@ -581,6 +606,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleBiometricToggle(isChecked: Boolean, switch: MaterialSwitch?) {
+        if (isChecked) {
+            val currentUser = Firebase.auth.currentUser
+            if (currentUser == null) {
+                Toast.makeText(this, getString(R.string.biometric_requires_sign_in), Toast.LENGTH_LONG).show()
+                switch?.isChecked = false
+                return
+            }
+            if (!BiometricHelper.isBiometricAvailable(this)) {
+                Toast.makeText(this, getString(R.string.biometric_not_available), Toast.LENGTH_LONG).show()
+                switch?.isChecked = false
+                return
+            }
+            val prompt = BiometricHelper.createPrompt(this, {
+                BiometricHelper.setEnabled(this, true)
+                lockAppOnResume = false
+                Toast.makeText(this, getString(R.string.biometric_enabled), Toast.LENGTH_SHORT).show()
+                switch?.isChecked = true
+            }) { error ->
+                switch?.isChecked = false
+                Toast.makeText(
+                    this,
+                    error ?: getString(R.string.biometric_unlock_failed),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            prompt.authenticate(BiometricHelper.buildPromptInfo(this))
+        } else {
+            BiometricHelper.setEnabled(this, false)
+            lockAppOnResume = false
+            Toast.makeText(this, getString(R.string.biometric_disabled), Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun showCreateReminderBottomSheet() {
         val bottomSheetDialog = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.bottom_sheet_create_reminder, null)
@@ -624,7 +683,7 @@ class MainActivity : AppCompatActivity() {
         saveButton?.setOnClickListener {
             val title = titleInput?.text?.toString()?.trim()
             if (title.isNullOrEmpty()) {
-                Toast.makeText(this, "Please enter a reminder title", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.error_reminder_title_required), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -640,7 +699,7 @@ class MainActivity : AppCompatActivity() {
 
             TaskManager.addTask(reminderTask)
             bottomSheetDialog.dismiss()
-            Toast.makeText(this, "Reminder set successfully!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.success_reminder_created), Toast.LENGTH_SHORT).show()
         }
 
         // Cancel
@@ -668,7 +727,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<android.widget.TextView>(R.id.txtEmail)?.setText(user?.email ?: "")
         findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSignOut)?.setOnClickListener {
             com.google.firebase.ktx.Firebase.auth.signOut()
-            android.widget.Toast.makeText(this, "Signed out", android.widget.Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(
+                this,
+                getString(R.string.success_signed_out),
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
             startActivity(android.content.Intent(this, LoginActivity::class.java))
             finish()
         }

@@ -1,6 +1,7 @@
 package com.easyplan.security
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
@@ -21,44 +22,72 @@ object BiometricHelper {
     private const val TAG = "BiometricHelper"
     private const val PREFS = "biometric_prefs"
     private const val KEY_ENABLED = "enabled"
+    private const val KEY_ENABLED_USER = "enabled_user_id"
 
     fun isBiometricAvailable(context: Context): Boolean {
         val biometricManager = BiometricManager.from(context)
-        val canAuth = biometricManager.canAuthenticate(
+        val authenticators = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             BiometricManager.Authenticators.BIOMETRIC_STRONG or
                 BiometricManager.Authenticators.DEVICE_CREDENTIAL
-        )
+        } else {
+            BiometricManager.Authenticators.BIOMETRIC_STRONG
+        }
+        val canAuth = biometricManager.canAuthenticate(authenticators)
         val available = canAuth == BiometricManager.BIOMETRIC_SUCCESS
         Log.d(TAG, "isBiometricAvailable: $available (result=$canAuth)")
         return available
     }
 
-    fun isEnabled(context: Context): Boolean {
-        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        return prefs.getBoolean(KEY_ENABLED, false)
-    }
+    private fun prefs(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+
+    fun isEnabled(context: Context): Boolean = isEnabledForCurrentUser(context)
 
     fun setEnabled(context: Context, enabled: Boolean) {
-        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        prefs.edit().putBoolean(KEY_ENABLED, enabled).apply()
+        val editor = prefs(context).edit().putBoolean(KEY_ENABLED, enabled)
+        if (enabled) {
+            val uid = Firebase.auth.currentUser?.uid
+            if (!uid.isNullOrEmpty()) {
+                editor.putString(KEY_ENABLED_USER, uid)
+            }
+        } else {
+            editor.remove(KEY_ENABLED_USER)
+        }
+        editor.apply()
         Log.i(TAG, "setEnabled: Biometrics toggled to $enabled")
+    }
+
+    private fun isEnabledForCurrentUser(context: Context): Boolean {
+        val currentUid = Firebase.auth.currentUser?.uid
+        val savedUid = prefs(context).getString(KEY_ENABLED_USER, null)
+        val enabled = prefs(context).getBoolean(KEY_ENABLED, false)
+        return enabled && !savedUid.isNullOrEmpty() && savedUid == currentUid
     }
 
     fun shouldPromptForBiometrics(context: Context): Boolean {
         val hasUser = Firebase.auth.currentUser != null
-        return hasUser && isEnabled(context)
+        val enabledForUser = isEnabledForCurrentUser(context)
+        Log.d(TAG, "shouldPromptForBiometrics: hasUser=$hasUser enabledForUser=$enabledForUser")
+        return hasUser && enabledForUser
     }
 
-    fun buildPromptInfo(context: Context): BiometricPrompt.PromptInfo =
-        BiometricPrompt.PromptInfo.Builder()
+    fun buildPromptInfo(context: Context): BiometricPrompt.PromptInfo {
+        val builder = BiometricPrompt.PromptInfo.Builder()
             .setTitle(context.getString(R.string.biometric_prompt_title))
             .setSubtitle(context.getString(R.string.biometric_prompt_subtitle))
             .setDescription(context.getString(R.string.biometric_prompt_description))
-            .setAllowedAuthenticators(
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            builder.setAllowedAuthenticators(
                 BiometricManager.Authenticators.BIOMETRIC_STRONG or
                     BiometricManager.Authenticators.DEVICE_CREDENTIAL
             )
-            .build()
+        } else {
+            builder.setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+            builder.setNegativeButtonText(context.getString(R.string.cancel))
+        }
+
+        return builder.build()
+    }
 
     fun createPrompt(
         activity: FragmentActivity,

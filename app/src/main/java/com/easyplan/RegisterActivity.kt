@@ -84,14 +84,14 @@ class RegisterActivity : AppCompatActivity() {
             // Validate required fields
             if (fullName.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Log.w(TAG, "Registration attempt with empty fields")
-                Toast.makeText(this, "Please enter name, email and password", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.error_registration_fields), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             // Validate password confirmation
             if (password != confirm) {
                 Log.w(TAG, "Password confirmation mismatch")
-                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.error_passwords_dont_match), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -126,7 +126,7 @@ class RegisterActivity : AppCompatActivity() {
                                 Log.e(TAG, "Failed to save user metadata", e)
                             }
 
-                        Toast.makeText(this, "Account created!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.success_registration), Toast.LENGTH_SHORT).show()
 
                         // Navigate to main app
                         startActivity(Intent(this, MainActivity::class.java),
@@ -135,7 +135,11 @@ class RegisterActivity : AppCompatActivity() {
                     } else {
                         Log.e(TAG, "Registration failed", task.exception)
                         btn.isEnabled = true
-                        Toast.makeText(this, task.exception?.localizedMessage ?: "Registration failed", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this,
+                            task.exception?.localizedMessage ?: getString(R.string.error_registration_failed),
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
         }

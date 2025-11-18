@@ -75,11 +75,15 @@
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipEnglish"
                         style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:text="@string/language_english" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipZulu"
                         style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:text="@string/language_zulu" />
                 </com.google.android.material.chip.ChipGroup>
             </LinearLayout>
@@ -117,16 +121,22 @@
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipThemeSystem"
                         style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:text="@string/theme_system" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipThemeLight"
                         style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:text="@string/theme_light" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipThemeDark"
                         style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:text="@string/theme_dark" />
                 </com.google.android.material.chip.ChipGroup>
             </LinearLayout>

@@ -67,7 +67,12 @@ class LoginActivity : AppCompatActivity() {
             firebaseAuthWithGoogle(account)
         } catch (e: ApiException) {
             Log.e(TAG, "Google Sign-In failed", e)
-            Toast.makeText(this, "Google Sign-In failed: ${e.message}", Toast.LENGTH_LONG).show()
+            val reason = e.localizedMessage ?: ""
+            Toast.makeText(
+                this,
+                getString(R.string.error_google_signin_detail, reason),
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -124,18 +129,21 @@ class LoginActivity : AppCompatActivity() {
 
             if (email.isEmpty()) {
                 Log.w(TAG, "Forgot password: Email field is empty")
-                Toast.makeText(this, "Enter your email first", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.error_email_required_first), Toast.LENGTH_SHORT).show()
             } else {
                 Log.d(TAG, "Sending password reset email to: $email")
-                // Firebase Authentication handles password reset email
                 auth.sendPasswordResetEmail(email)
                     .addOnSuccessListener {
                         Log.i(TAG, "Password reset email sent successfully to: $email")
-                        Toast.makeText(this, "Password reset email sent", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, getString(R.string.success_password_reset), Toast.LENGTH_LONG).show()
                     }
                     .addOnFailureListener { exception ->
                         Log.e(TAG, "Failed to send password reset email", exception)
-                        Toast.makeText(this, exception.localizedMessage ?: "Failed to send reset email", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this,
+                            exception.localizedMessage ?: getString(R.string.error_password_reset_failed),
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
             }
         }
@@ -150,7 +158,7 @@ class LoginActivity : AppCompatActivity() {
             // Validate input fields
             if (email.isEmpty() || password.isEmpty()) {
                 Log.w(TAG, "Login attempt with empty credentials")
-                Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.error_login_fields), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -167,10 +175,20 @@ class LoginActivity : AppCompatActivity() {
 
                     if (task.isSuccessful) {
                         Log.i(TAG, "Login successful for user: ${auth.currentUser?.uid}")
+                        val name = auth.currentUser?.displayName
+                        if (!name.isNullOrEmpty()) {
+                            Toast.makeText(this, getString(R.string.success_login_user, name), Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this, getString(R.string.success_login), Toast.LENGTH_SHORT).show()
+                        }
                         navigateToMain()
                     } else {
                         Log.e(TAG, "Login failed", task.exception)
-                        Toast.makeText(this, task.exception?.localizedMessage ?: "Login failed", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this,
+                            task.exception?.localizedMessage ?: getString(R.string.error_login_failed),
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
         }
@@ -207,11 +225,17 @@ class LoginActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     Log.i(TAG, "firebaseAuthWithGoogle: Sign-In successful")
                     val user = auth.currentUser
-                    Toast.makeText(this, "Welcome ${user?.displayName}!", Toast.LENGTH_SHORT).show()
+                    val name = user?.displayName ?: ""
+                    Toast.makeText(this, getString(R.string.success_login_user, name), Toast.LENGTH_SHORT).show()
                     navigateToMain()
                 } else {
                     Log.e(TAG, "firebaseAuthWithGoogle: Sign-In failed", task.exception)
-                    Toast.makeText(this, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                    val reason = task.exception?.localizedMessage ?: ""
+                    Toast.makeText(
+                        this,
+                        getString(R.string.error_google_signin_detail, reason),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
     }

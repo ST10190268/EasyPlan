@@ -36,8 +36,12 @@
     <string name="task_no_time">Asikho isikhathi esimisiwe</string>
     <string name="save_task">Londoloza</string>
     <string name="cancel">Khansela</string>
+    <string name="toast_plan_week">Vula ikhalenda ukuze uhlele iviki lakho</string>
     <string name="no_tasks">Akukho misebenzi okwamanje</string>
     <string name="no_tasks_subtitle">Cindezela + ukuze uqale</string>
+    <string name="error_task_title_required">Sicela ufake isihloko somsebenzi</string>
+    <string name="error_reminder_title_required">Sicela ufake isihloko sesikhumbuzi</string>
+    <string name="success_reminder_created">Isikhumbuzi sisethwe ngempumelelo</string>
 
     <string name="priority">Okubalulekile</string>
     <string name="priority_high">Kubaluleke kakhulu</string>
@@ -87,6 +91,8 @@
     <string name="biometric_enrollment_required">Setha ubhayometriki kumasethingi edivayisi kuqala</string>
     <string name="biometric_enabled">Ukuvulwa ngebhayometriki kuvuliwe</string>
     <string name="biometric_disabled">Ukuvulwa ngebhayometriki kukhutshaziwe</string>
+    <string name="biometric_requires_sign_in">Ngena kuqala ngaphambi kokuvula ubhayometriki</string>
+    <string name="biometric_unlock_failed">Ukuqinisekisa ngeminwe/ubuso kuhlulekile</string>
     <string name="notifications_section">Izaziso</string>
     <string name="push_notifications">Izixwayiso zomsebenzi</string>
     <string name="notifications_description">Thola izikhumbuzi nezibuyekezo ngesikhathi sangempela</string>
@@ -99,6 +105,7 @@
     <string name="offline_sync_complete">Imisebenzi ixhunyiwe ngempumelelo</string>
     <string name="offline_sync_failed">Ukuhlanganisa kuhlulekile. Sizozama futhi ngokuzenzakalela.</string>
     <string name="offline_task_saved">Umsebenzi ulondolozwe ngaphandle kwe-inthanethi. Sizowudlulisa lapho uxhunyiwe.</string>
+    <string name="success_signed_out">Uphumile</string>
     <string name="offline_delete_not_supported">Sicela uxhumeke ku-inthanethi ukuze ususe imisebenzi.</string>
     <string name="account_section">I-akhawunti</string>
     <string name="sign_out">Phuma</string>
@@ -120,9 +127,14 @@
     <string name="error_short_password">Iphasiwedi kumele ibe okungenani izinhlamvu eziyisithupha</string>
     <string name="error_passwords_dont_match">Amaphasiwedi awafani</string>
     <string name="error_empty_name">Igama alikwazi ukuba nantshe</string>
+    <string name="error_registration_fields">Faka igama eligcwele, i-imeyili nephasiwedi</string>
     <string name="error_login_failed">Ukungena kuhlulekile. Zama futhi.</string>
     <string name="error_registration_failed">Ukubhalisa kuhlulekile. Zama futhi.</string>
     <string name="error_google_signin_failed">Ukungena nge-Google kuhlulekile</string>
+    <string name="error_google_signin_detail">Ukungena nge-Google kuhlulekile: %1$s</string>
+    <string name="error_email_required_first">Faka i-imeyili kuqala</string>
+    <string name="error_login_fields">Faka i-imeyili nephasiwedi</string>
+    <string name="error_password_reset_failed">Ukuthumela i-imeyili yokusetha kabusha kuhlulekile</string>
     <string name="error_network">Inkinga yenethiwekhi. Hlola uxhumano lwakho.</string>
     <string name="error_unknown">Kwenzeke iphutha elingalindelekile</string>
 
@@ -132,6 +144,7 @@
     <string name="success_task_updated">Umsebenzi ubuyekeziwe</string>
     <string name="success_task_deleted">Umsebenzi ususwe</string>
     <string name="success_password_reset">I-imeyili yokusetha kabusha ithunyelwe</string>
+    <string name="success_login_user">Siyakwamukela %1$s!</string>
     <string name="success_notifications_enabled">Izaziso zivuliwe</string>
     <string name="success_notifications_disabled">Izaziso zivaliwe</string>
 
