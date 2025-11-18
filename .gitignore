@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+
+# Firebase/Google config files (keep local only)
+**/google-services.json
+**/GoogleService-Info.plist
+**/serviceAccount*.json
+*.keystore

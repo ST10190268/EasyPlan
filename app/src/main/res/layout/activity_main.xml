@@ -21,6 +21,13 @@
             android:layout_height="match_parent" />
 
         <include
+            android:id="@+id/view_statistics"
+            layout="@layout/fragment_statistics"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <include
             android:id="@+id/view_calendar"
             layout="@layout/fragment_calendar"
             android:layout_width="match_parent"
@@ -30,6 +37,13 @@
         <include
             android:id="@+id/view_settings"
             layout="@layout/fragment_settings"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/view_profile"
+            layout="@layout/fragment_profile"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone" />

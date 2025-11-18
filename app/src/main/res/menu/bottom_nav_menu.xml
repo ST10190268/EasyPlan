@@ -5,6 +5,10 @@
         android:icon="@drawable/ic_nav_tasks"
         android:title="Tasks" />
     <item
+        android:id="@+id/nav_statistics"
+        android:icon="@drawable/ic_nav_calendar"
+        android:title="Statistics" />
+    <item
         android:id="@+id/nav_calendar"
         android:icon="@drawable/ic_nav_calendar"
         android:title="Calendar" />
@@ -13,7 +17,7 @@
         android:icon="@drawable/ic_nav_settings"
         android:title="Settings" />
     <item
-        android:id="@+id/nav_faq"
-        android:icon="@drawable/ic_help"
-        android:title="FAQ" />
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_nav_profile"
+        android:title="Profile" />
 </menu>

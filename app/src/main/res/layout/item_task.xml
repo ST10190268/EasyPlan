@@ -9,10 +9,22 @@
     android:background="@drawable/card_background"
     android:layout_marginBottom="8dp">
 
+    <!-- Priority Indicator -->
     <View
+        android:id="@+id/priorityIndicator"
         android:layout_width="4dp"
         android:layout_height="40dp"
         android:background="@color/brand_blue" />
+
+    <!-- Category Icon -->
+    <TextView
+        android:id="@+id/tvCategoryIcon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:text="📌"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:layout_marginStart="8dp" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -22,7 +34,7 @@
         android:layout_marginStart="12dp">
 
         <TextView
-            android:id="@+id/taskTitle"
+            android:id="@+id/tvTaskTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Task Title"
@@ -31,12 +43,22 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/tvTaskDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Task description"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="2dp" />
+
+        <TextView
             android:id="@+id/taskTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Due: 2:00 PM"
             android:textSize="12sp"
-            android:textColor="@color/text_secondary" />
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="2dp" />
 
     </LinearLayout>
 

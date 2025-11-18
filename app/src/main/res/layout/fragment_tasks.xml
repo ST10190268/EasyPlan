@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/premium_gradient_background"
+    android:background="@drawable/blue_white_gradient_background"
     android:scrollbars="none"
     android:overScrollMode="never">
 
@@ -17,23 +17,22 @@
         android:paddingTop="48dp"
         android:clipToPadding="false">
 
-        <!-- Header Section with Glassmorphism Effect -->
+        <!-- Header Section with Blue/White Glassmorphism Effect -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="32dp"
             app:cardCornerRadius="28dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/glass_surface"
-            app:strokeColor="#1A278FE5"
+            app:cardBackgroundColor="#80FFFFFF"
+            app:strokeColor="#B3E5FC"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp"
-                android:background="@drawable/glass_shimmer_overlay">
+                android:padding="24dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -41,31 +40,30 @@
                     android:text="Quick Actions"
                     android:textSize="32sp"
                     android:textStyle="bold"
-                    android:textColor="@color/text_primary"
+                    android:textColor="#0D47A1"
                     android:letterSpacing="0.02"
-                    android:fontFamily="sans-serif-medium" />
+                    android:fontFamily="sans-serif-condensed-medium" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Streamline your productivity"
                     android:textSize="16sp"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="#42A5F5"
                     android:layout_marginTop="4dp"
-                    android:fontFamily="sans-serif"
-                    android:alpha="0.8" />
+                    android:fontFamily="sans-serif-light" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Enhanced Grid Layout with Staggered Animation -->
+        <!-- Enhanced Grid Layout -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:animateLayoutChanges="true">
 
-            <!-- First Row: Add Task and Reminder with Floating Effect -->
+            <!-- First Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -73,7 +71,7 @@
                 android:weightSum="2"
                 android:layout_marginBottom="20dp">
 
-                <!-- Add Task Card with Advanced Styling -->
+                <!-- Add Task Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardAddTask"
                     android:layout_width="0dp"
@@ -81,41 +79,37 @@
                     android:layout_weight="1"
                     android:layout_marginEnd="12dp"
                     app:cardCornerRadius="24dp"
-                    app:cardElevation="16dp"
-                    app:cardBackgroundColor="@color/card_surface"
-                    app:strokeColor="@color/brand_blue"
-                    app:strokeWidth="2dp"
-                    app:cardPreventCornerOverlap="true"
-                    app:cardUseCompatPadding="true"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:strokeColor="#BBDEFB"
+                    app:strokeWidth="1dp"
                     android:clickable="true"
                     android:focusable="true"
-                    android:foreground="@drawable/premium_ripple_effect"
+                    android:foreground="?attr/selectableItemBackground"
                     android:stateListAnimator="@animator/card_lift_animator">
 
                     <LinearLayout
-                        android:layout_width="152dp"
-                        android:layout_height="172dp"
-                        android:gravity="center_horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="24dp"
-                        android:weightSum="3">
+                        android:padding="20dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="0dp"
-                            android:layout_weight="2"
+                            android:layout_weight="1"
                             android:gravity="center"
                             android:text="📝"
-                            android:textSize="44sp" />
+                            android:textSize="48sp" />
 
                         <TextView
                             android:layout_width="wrap_content"
-                            android:layout_height="50dp"
-                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
                             android:fontFamily="sans-serif-medium"
-                            android:gravity="center"
                             android:text="Add Task"
-                            android:textColor="@color/text_primary"
+                            android:textColor="#0D47A1"
                             android:textSize="18sp"
                             android:textStyle="bold" />
 
@@ -126,46 +120,42 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardCreateReminder"
                     android:layout_width="0dp"
-                    android:layout_height="230dp"
+                    android:layout_height="200dp"
                     android:layout_weight="1"
                     android:layout_marginStart="12dp"
                     app:cardCornerRadius="24dp"
-                    app:cardElevation="16dp"
-                    app:cardBackgroundColor="@color/card_surface"
-                    app:strokeColor="@color/brand_blue"
-                    app:strokeWidth="2dp"
-                    app:cardPreventCornerOverlap="true"
-                    app:cardUseCompatPadding="true"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:strokeColor="#BBDEFB"
+                    app:strokeWidth="1dp"
                     android:clickable="true"
                     android:focusable="true"
-                    android:foreground="@drawable/premium_ripple_effect"
+                    android:foreground="?attr/selectableItemBackground"
                     android:stateListAnimator="@animator/card_lift_animator">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:padding="24dp"
-                        android:gravity="center_horizontal"
-                        android:weightSum="3">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="0dp"
-                            android:layout_weight="2"
-                            android:text="🔔"
-                            android:textSize="44sp"
-                            android:gravity="center" />
+                        android:padding="20dp"
+                        android:gravity="center">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="0dp"
                             android:layout_weight="1"
+                            android:text="🔔"
+                            android:textSize="48sp"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
                             android:text="Reminder"
                             android:textStyle="bold"
                             android:textSize="18sp"
-                            android:textColor="@color/text_primary"
-                            android:gravity="center"
+                            android:textColor="#0D47A1"
                             android:fontFamily="sans-serif-medium" />
 
                     </LinearLayout>
@@ -174,62 +164,47 @@
             </LinearLayout>
 
             <!-- Second Row: Plan Week (Hero Card) -->
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPlanWeek"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center">
+                android:layout_height="160dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:strokeColor="#BBDEFB"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:stateListAnimator="@animator/hero_card_animator">
 
-                <!-- Plan Week Hero Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardPlanWeek"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="172dp"
-                    android:layout_marginStart="24dp"
-                    android:layout_marginEnd="24dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="12dp"
-                    app:cardBackgroundColor="@color/card_surface"
-                    app:strokeColor="@color/brand_blue"
-                    app:strokeWidth="2dp"
-                    app:cardPreventCornerOverlap="true"
-                    app:cardUseCompatPadding="true"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="@drawable/hero_ripple_effect"
-                    android:stateListAnimator="@animator/hero_card_animator">
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp"
+                    android:gravity="center">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:padding="24dp"
-                        android:gravity="center_horizontal"
-                        android:weightSum="3">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:text="📅"
+                        android:textSize="48sp"
+                        android:gravity="center" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="0dp"
-                            android:layout_weight="2"
-                            android:text="📅"
-                            android:textSize="44sp"
-                            android:gravity="center" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Plan Week"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:textColor="#0D47A1"
+                        android:fontFamily="sans-serif-medium" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:text="Plan Week"
-                            android:textStyle="bold"
-                            android:textSize="18sp"
-                            android:textColor="@color/text_primary"
-                            android:gravity="center"
-                            android:fontFamily="sans-serif-medium" />
-
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-            </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Floating Action Indicators -->
             <LinearLayout
@@ -237,30 +212,119 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center"
-                android:layout_marginTop="24dp">
+                android:layout_marginTop="32dp">
+
+                <!-- You'll need to create these drawables -->
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/dot_indicator_active_blue"
+                    android:layout_margin="4dp" />
 
                 <View
                     android:layout_width="8dp"
                     android:layout_height="8dp"
-                    android:background="@drawable/dot_indicator_active"
+                    android:background="@drawable/dot_indicator_inactive_blue"
                     android:layout_margin="4dp" />
 
                 <View
-                    android:layout_width="6dp"
-                    android:layout_height="6dp"
-                    android:background="@drawable/dot_indicator_inactive"
-                    android:layout_margin="4dp" />
-
-                <View
-                    android:layout_width="6dp"
-                    android:layout_height="6dp"
-                    android:background="@drawable/dot_indicator_inactive"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/dot_indicator_inactive_blue"
                     android:layout_margin="4dp" />
 
             </LinearLayout>
 
         </LinearLayout>
 
+        <!-- Today's Tasks Section -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Today's Tasks"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:textColor="#0D47A1"
+                    android:paddingBottom="16dp"
+                    android:fontFamily="sans-serif-medium"/>
+
+                <LinearLayout
+                    android:id="@+id/tasksTabTodayContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/tasksTabEmptyToday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No tasks for today. Tap Add Task to create one!"
+                    android:textSize="14sp"
+                    android:textColor="#42A5F5"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- High Priority Tasks Section -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="High Priority"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:textColor="#0D47A1"
+                    android:paddingBottom="16dp"
+                    android:fontFamily="sans-serif-medium"/>
+
+                <LinearLayout
+                    android:id="@+id/tasksTabPriorityContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/tasksTabEmptyPriority"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No high priority tasks. Nice and calm!"
+                    android:textSize="14sp"
+                    android:textColor="#42A5F5"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
     </LinearLayout>
 </ScrollView>
-

@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Login screen layout for the EasyPlan app.
+    This layout features a clean, card-based design with a gradient background.
+    It includes fields for email and password, a primary sign-in button, and links for password recovery and registration.
+    A progress bar is included to provide feedback during authentication.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -20,7 +25,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Main card container -->
+        <!-- Main card container for the login form -->
         <androidx.cardview.widget.CardView
             android:id="@+id/loginCard"
             android:layout_width="0dp"
@@ -126,38 +131,101 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
+                <!-- Divider with "OR" text -->
+                <TextView
+                    android:id="@+id/dividerText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="OR"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:layout_marginTop="24dp"
+                    app:layout_constraintTop_toBottomOf="@id/btnLogin"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <!-- Google Sign-In Button -->
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnRegister"
-                    style="@style/Widget.EasyPlan.Button.Outlined"
+                    android:id="@+id/btnGoogleSignIn"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Create account"
-                    android:layout_marginTop="16dp"
-                    app:layout_constraintTop_toBottomOf="@id/btnLogin"
+                    android:text="Sign in with Google"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginTop="24dp"
+                    app:icon="@drawable/ic_google"
+                    app:iconTint="@null"
+                    app:iconGravity="textStart"
+                    app:iconPadding="12dp"
+                    app:iconSize="20dp"
+                    app:strokeColor="@color/brand_blue"
+                    app:strokeWidth="1dp"
+                    app:layout_constraintTop_toBottomOf="@id/dividerText"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Forgot password -->
-        <TextView
-            android:id="@+id/forgotPassword"
+        <!-- Container for secondary actions like "Forgot Password" and "Register" -->
+        <LinearLayout
+            android:id="@+id/secondaryActionsLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/loginCard"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/forgotPassword"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Forgot password?"
+                android:textColor="@color/brand_blue"
+                android:textStyle="bold"
+                android:background="?attr/selectableItemBackground"
+                android:padding="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="|"
+                android:textColor="@color/text_secondary"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"/>
+
+            <TextView
+                android:id="@+id/registerLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create an account"
+                android:textColor="@color/brand_blue"
+                android:textStyle="bold"
+                android:background="?attr/selectableItemBackground"
+                android:padding="8dp"/>
+
+        </LinearLayout>
+
+        <!-- Progress bar for showing loading state during login -->
+        <ProgressBar
+            android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Forgot password?"
-            android:textColor="@color/brand_blue"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/btnRegister"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="@+id/loginCard"
+            app:layout_constraintBottom_toBottomOf="@+id/loginCard"
+            app:layout_constraintStart_toStartOf="@+id/loginCard"
+            app:layout_constraintEnd_toEndOf="@+id/loginCard" />
+
 
         <!-- Bottom spacing -->
         <View
             android:layout_width="0dp"
             android:layout_height="32dp"
-            app:layout_constraintTop_toBottomOf="@id/forgotPassword"
+            app:layout_constraintTop_toBottomOf="@id/secondaryActionsLayout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

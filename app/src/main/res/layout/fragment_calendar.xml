@@ -103,96 +103,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <!-- Sample task items will be added here programmatically -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="12dp"
-                        android:background="@drawable/card_background"
-                        android:layout_marginBottom="8dp">
+                    <!-- Tasks will be added here programmatically -->
 
-                        <View
-                            android:layout_width="4dp"
-                            android:layout_height="40dp"
-                            android:background="@color/brand_blue" />
 
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="12dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Review project proposal"
-                                android:textSize="16sp"
-                                android:textColor="@color/text_primary"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Due: 2:00 PM"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary" />
-
-                        </LinearLayout>
-
-                        <com.google.android.material.checkbox.MaterialCheckBox
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:buttonTint="@color/brand_blue" />
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="12dp"
-                        android:background="@drawable/card_background"
-                        android:layout_marginBottom="8dp">
-
-                        <View
-                            android:layout_width="4dp"
-                            android:layout_height="40dp"
-                            android:background="@color/brand_blue_light" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="12dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Team meeting preparation"
-                                android:textSize="16sp"
-                                android:textColor="@color/text_primary"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Due: 4:30 PM"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary" />
-
-                        </LinearLayout>
-
-                        <com.google.android.material.checkbox.MaterialCheckBox
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:buttonTint="@color/brand_blue" />
-
-                    </LinearLayout>
 
                 </LinearLayout>
 

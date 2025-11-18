@@ -31,4 +31,13 @@
     <!-- Shadow and elevation -->
     <color name="shadow_light">#1A000000</color>
     <color name="divider_light">#E0E0E0</color>
+    <color name="divider">#E0E0E0</color>
+
+    <!-- Background colors -->
+    <color name="background">#F5F5F5</color>
+    <color name="background_secondary">#EEEEEE</color>
+
+    <!-- Chip colors -->
+    <color name="chip_background">#E3F2FD</color>
+    <color name="chip_selected">#2196F3</color>
 </resources>

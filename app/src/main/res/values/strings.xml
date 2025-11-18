@@ -1,3 +1,147 @@
 <resources>
+    <!-- Application Name -->
     <string name="app_name">EasyPlan</string>
+
+
+
+
+    <string name="google_web_client_id">135975656866-h8fr5vq32usc6fa7344vips8rqg8tq50.apps.googleusercontent.com</string>
+
+
+    <string name="jsonbin_api_key" translatable="false">$2a$10$TY3zK1cGfl39XdS8hlEQvucywnynY33xY2BkotlVhJlCTgBCk6NKi</string>
+
+
+    <string name="jsonbin_base_url" translatable="false">https://api.jsonbin.io/v3/</string>
+
+
+
+    <string name="login_title">Welcome Back</string>
+    <string name="login_subtitle">Sign in to continue</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="sign_in_button">Sign In</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="create_account">Create an account</string>
+    <string name="or_divider">OR</string>
+
+    <!-- Registration Strings -->
+    <string name="register_title">Create Account</string>
+    <string name="register_subtitle">Join EasyPlan today</string>
+    <string name="full_name_hint">Full Name</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="sign_up_button">Sign Up</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="sign_in_link">Sign In</string>
+
+    <!-- ============================================ -->
+    <!-- Task Management Strings -->
+    <!-- ============================================ -->
+
+    <string name="tasks_tab">Tasks</string>
+    <string name="calendar_tab">Calendar</string>
+    <string name="settings_tab">Settings</string>
+    <string name="statistics_tab">Statistics</string>
+    <string name="add_task">Add Task</string>
+    <string name="edit_task">Edit Task</string>
+    <string name="delete_task">Delete Task</string>
+    <string name="task_title_hint">Task Title</string>
+    <string name="task_description_hint">Description (optional)</string>
+    <string name="due_date">Due Date</string>
+    <string name="due_time">Due Time</string>
+    <string name="save_task">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="no_tasks">No tasks yet</string>
+    <string name="no_tasks_subtitle">Tap + to create your first task</string>
+
+    <!-- Priority Strings -->
+    <string name="priority">Priority</string>
+    <string name="priority_high">High Priority</string>
+    <string name="priority_medium">Medium Priority</string>
+    <string name="priority_low">Low Priority</string>
+
+    <!-- Category Strings -->
+    <string name="category">Category</string>
+    <string name="category_work">Work</string>
+    <string name="category_personal">Personal</string>
+    <string name="category_study">Study</string>
+    <string name="category_health">Health</string>
+    <string name="category_shopping">Shopping</string>
+    <string name="category_other">Other</string>
+
+    <!-- Statistics Strings -->
+    <string name="statistics_title">Your Statistics</string>
+    <string name="total_tasks">Total Tasks</string>
+    <string name="completed_tasks">Completed</string>
+    <string name="pending_tasks">Pending</string>
+    <string name="completion_rate">Completion Rate</string>
+    <string name="productivity_score">Productivity Score</string>
+    <string name="tasks_today">Completed Today</string>
+    <string name="tasks_this_week">Completed This Week</string>
+    <string name="tasks_this_month">Completed This Month</string>
+    <string name="completion_streak">Day Streak</string>
+    <string name="overdue_tasks">Overdue Tasks</string>
+    <string name="due_today">Due Today</string>
+    <string name="due_this_week">Due This Week</string>
+
+    <!-- ============================================ -->
+    <!-- Settings Strings -->
+    <!-- ============================================ -->
+
+    <string name="settings_title">Settings</string>
+    <string name="theme_section">Theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
+    <string name="language_section">Language (Coming Soon)</string>
+    <string name="language_english">English</string>
+    <string name="language_afrikaans">Afrikaans (Coming Soon)</string>
+    <string name="language_zulu">isiZulu (Coming Soon)</string>
+    <string name="biometric_section">Security (Coming Soon)</string>
+    <string name="fingerprint_auth">Fingerprint Authentication (Coming Soon)</string>
+    <string name="notifications_section">Notifications (Coming Soon)</string>
+    <string name="push_notifications">Push Notifications (Coming Soon)</string>
+    <string name="account_section">Account</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="coming_soon">Coming Soon</string>
+
+    <!-- ============================================ -->
+    <!-- Error Messages -->
+    <!-- ============================================ -->
+
+    <string name="error_empty_email">Email cannot be empty</string>
+    <string name="error_invalid_email">Please enter a valid email</string>
+    <string name="error_empty_password">Password cannot be empty</string>
+    <string name="error_short_password">Password must be at least 6 characters</string>
+    <string name="error_passwords_dont_match">Passwords do not match</string>
+    <string name="error_empty_name">Name cannot be empty</string>
+    <string name="error_login_failed">Login failed. Please try again.</string>
+    <string name="error_registration_failed">Registration failed. Please try again.</string>
+    <string name="error_google_signin_failed">Google Sign-In failed</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_unknown">An unexpected error occurred</string>
+
+    <!-- ============================================ -->
+    <!-- Success Messages -->
+    <!-- ============================================ -->
+
+    <string name="success_login">Welcome back!</string>
+    <string name="success_registration">Account created successfully!</string>
+    <string name="success_task_created">Task created</string>
+    <string name="success_task_updated">Task updated</string>
+    <string name="success_task_deleted">Task deleted</string>
+    <string name="success_password_reset">Password reset email sent</string>
+
+    <!-- ============================================ -->
+    <!-- Content Descriptions (Accessibility) -->
+    <!-- ============================================ -->
+
+    <string name="cd_app_logo">EasyPlan Logo</string>
+    <string name="cd_add_task_button">Add new task</string>
+    <string name="cd_task_checkbox">Mark task as complete</string>
+    <string name="cd_calendar_icon">Calendar</string>
+    <string name="cd_settings_icon">Settings</string>
+    <string name="cd_google_icon">Google Sign-In</string>
+
 </resources>
