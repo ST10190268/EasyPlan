@@ -3,6 +3,7 @@ package com.easyplan.util
 import android.content.Context
 import android.util.Log
 import com.easyplan.data.Task
+import com.easyplan.local.TaskLocalDataSource
 import com.easyplan.repository.TaskRepository
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
@@ -13,406 +14,317 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * TaskManager - Singleton object for managing tasks across the app
- *
- * This object serves as the central repository for task data, handling:
- * - In-memory task storage for quick access
- * - Firebase Firestore synchronization for persistence
- * - JSONBin REST API integration for backup and API demonstration
- * - CRUD operations (Create, Read, Update, Delete)
- * - Date-based task filtering
- * - Sample task initialization for demo purposes
- *
- * The singleton pattern ensures a single source of truth for task data
- * throughout the app lifecycle.
- *
- * @author EasyPlan Team
- * @version 2.0 - Added REST API integration
+ * TaskManager - In-memory + offline cache (Room) + Firebase + JSONBin sync layer.
  *
  * References:
- * - Singleton Pattern: https://kotlinlang.org/docs/object-declarations.html#object-declarations
- * - Firestore: https://firebase.google.com/docs/firestore
- * - JSONBin API: https://jsonbin.io/api-reference
+ * - Firestore Sync: https://firebase.google.com/docs/firestore/manage-data/add-data
+ * - Offline Caching with Room: https://developer.android.com/training/data-storage/room
  */
 object TaskManager {
 
     private const val TAG = "TaskManager"
 
-    // In-memory task storage for fast access
     private val tasks = mutableListOf<Task>()
+    private val pendingSyncIds = mutableSetOf<String>()
 
-    // Date formatter for comparing task dates (ignores time component)
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-    // Application context and local persistence
     private lateinit var appContext: Context
-    private val gson by lazy { com.google.gson.Gson() }
-    private const val PREFS_NAME = "tasks_local_cache"
-    private const val KEY_TASKS_JSON = "tasks_json"
-    private val prefs by lazy { appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
-
-    // Firebase instances - lazily initialized for performance
     private val db by lazy { Firebase.firestore }
     private val auth by lazy { Firebase.auth }
-
-    // Task repository for REST API integration
     private var taskRepository: TaskRepository? = null
 
-    /**
-     * Initializes the TaskManager with application context
-     * Required for REST API integration
-     *
-     * @param context Application context
-     */
     fun initialize(context: Context) {
         appContext = context.applicationContext
+        TaskLocalDataSource.initialize(appContext)
         if (taskRepository == null) {
             taskRepository = TaskRepository(appContext)
-            Log.d(TAG, "initialize: TaskRepository initialized")
+            Log.d(TAG, "initialize: TaskRepository ready")
         }
-        // Load any locally cached tasks (guest mode or warm start)
         loadFromLocal()
     }
-    /**
-     * Persist current in-memory tasks list to local SharedPreferences as JSON
-     */
-    private fun saveToLocal() {
-        try {
-            val json = gson.toJson(tasks)
-            prefs.edit().putString(KEY_TASKS_JSON, json).apply()
-            Log.d(TAG, "saveToLocal: Saved ${tasks.size} tasks to local cache")
-        } catch (e: Exception) {
-            Log.e(TAG, "saveToLocal: Failed to save tasks locally", e)
-        }
-    }
 
-    /**
-     * Load tasks from local SharedPreferences JSON cache into memory (if present)
-     */
     private fun loadFromLocal() {
         try {
-            val json = prefs.getString(KEY_TASKS_JSON, null) ?: return
-            val type = object : com.google.gson.reflect.TypeToken<List<Task>>() {}.type
-            val loaded: List<Task> = gson.fromJson(json, type) ?: emptyList()
-            if (loaded.isNotEmpty()) {
-                tasks.clear()
-                tasks.addAll(loaded)
-                Log.i(TAG, "loadFromLocal: Loaded ${tasks.size} tasks from local cache")
-            }
+            val entities = TaskLocalDataSource.getAllEntities()
+            tasks.clear()
+            tasks.addAll(entities.map { it.toTask() })
+            pendingSyncIds.clear()
+            pendingSyncIds.addAll(TaskLocalDataSource.getPendingSyncIds())
+            Log.i(TAG, "loadFromLocal: ${tasks.size} tasks cached (pending=${pendingSyncIds.size})")
         } catch (e: Exception) {
-            Log.e(TAG, "loadFromLocal: Failed to load tasks from local cache", e)
+            Log.e(TAG, "loadFromLocal: Failed to hydrate Room cache", e)
         }
     }
 
+    private fun canSyncNow(): Boolean =
+        ::appContext.isInitialized && auth.currentUser != null && NetworkUtils.isOnline(appContext)
 
-    /**
-     * Adds a new task to the in-memory list and syncs to both Firestore and JSONBin
-     *
-     * @param task The task to add
-     */
+    private fun shouldDeferSync(): Boolean =
+        auth.currentUser != null && (!::appContext.isInitialized || !NetworkUtils.isOnline(appContext))
+
+    fun getPendingSyncCount(): Int = pendingSyncIds.size
+
+    fun hasPendingSync(): Boolean = pendingSyncIds.isNotEmpty()
+
     fun addTask(task: Task) {
-        Log.d(TAG, "addTask: Adding task with ID: ${task.id}, Title: ${task.title}")
+        Log.d(TAG, "addTask: ${task.id}")
         tasks.add(task)
-        // Persist locally
-        saveToLocal()
 
-        // Sync to Firestore if user is authenticated
-        // Tasks are stored in a subcollection under each user's document
-        auth.currentUser?.uid?.let { uid ->
-            Log.d(TAG, "addTask: Syncing task to Firestore for user: $uid")
-            db.collection("users").document(uid)
-                .collection("tasks").document(task.id)
-                .set(task)
-                .addOnSuccessListener {
-                    Log.i(TAG, "addTask: Task successfully saved to Firestore")
-                    // Also sync to JSONBin REST API
-                    syncToRestApi()
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "addTask: Failed to save task to Firestore", e)
-                }
-        } ?: Log.w(TAG, "addTask: No authenticated user, task not synced to Firestore")
-    }
+        val needsDeferredSync = shouldDeferSync()
+        TaskLocalDataSource.upsert(task, needsDeferredSync)
+        if (needsDeferredSync) pendingSyncIds.add(task.id) else pendingSyncIds.remove(task.id)
 
-    /**
-     * Syncs all tasks to JSONBin REST API
-     * This demonstrates REST API integration as required by the rubric
-     */
-    fun syncToRestApi() {
-        taskRepository?.let { repo ->
-            Log.d(TAG, "syncToRestApi: Syncing ${tasks.size} tasks to JSONBin")
-            repo.syncToJsonBin(tasks.toList()) { success ->
-                if (success) {
-                    Log.i(TAG, "syncToRestApi: Successfully synced to JSONBin REST API")
-                } else {
-                    Log.e(TAG, "syncToRestApi: Failed to sync to JSONBin REST API")
-                }
+        if (canSyncNow()) {
+            pushTaskToFirestore(task) {
+                syncToRestApi()
             }
-        } ?: Log.w(TAG, "syncToRestApi: TaskRepository not initialized")
-    }
-
-    /**
-     * Syncs all tasks to JSONBin REST API with completion callback
-     */
-    fun syncToRestApi(onComplete: (Boolean) -> Unit) {
-        taskRepository?.let { repo ->
-            Log.d(TAG, "syncToRestApi(callback): Syncing ${tasks.size} tasks to JSONBin")
-            repo.syncToJsonBin(tasks.toList()) { success ->
-                if (success) Log.i(TAG, "syncToRestApi(callback): Success") else Log.e(TAG, "syncToRestApi(callback): Failed")
-                onComplete(success)
-            }
-        } ?: run {
-            Log.w(TAG, "syncToRestApi(callback): TaskRepository not initialized")
-            onComplete(false)
+        } else if (auth.currentUser == null) {
+            Log.d(TAG, "addTask: Guest mode task stored locally")
+        } else {
+            Log.w(TAG, "addTask: Offline - queued for sync")
         }
     }
 
+    private fun pushTaskToFirestore(task: Task, onComplete: (() -> Unit)? = null) {
+        val uid = auth.currentUser?.uid ?: run {
+            onComplete?.invoke()
+            return
+        }
+        db.collection("users")
+            .document(uid)
+            .collection("tasks")
+            .document(task.id)
+            .set(task)
+            .addOnSuccessListener {
+                Log.i(TAG, "pushTaskToFirestore: Synced ${task.id}")
+                TaskLocalDataSource.upsert(task, false)
+                pendingSyncIds.remove(task.id)
+                onComplete?.invoke()
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "pushTaskToFirestore: Failed ${task.id}", e)
+                pendingSyncIds.add(task.id)
+                onComplete?.invoke()
+            }
+    }
 
-    /**
-     * Loads tasks from JSONBin REST API
-     * Useful for demonstrating REST API integration
-     *
-     * @param onComplete Callback when loading is complete
-     */
+    private fun pushDeleteToFirestore(taskId: String) {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users")
+            .document(uid)
+            .collection("tasks")
+            .document(taskId)
+            .delete()
+            .addOnSuccessListener {
+                Log.i(TAG, "pushDeleteToFirestore: Deleted $taskId remotely")
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "pushDeleteToFirestore: Failed to delete $taskId", e)
+            }
+    }
+
+    fun syncToRestApi(onComplete: ((Boolean) -> Unit)? = null) {
+        if (!::appContext.isInitialized || !NetworkUtils.isOnline(appContext)) {
+            Log.w(TAG, "syncToRestApi: Skipped - offline")
+            onComplete?.invoke(false)
+            return
+        }
+        val repo = taskRepository ?: run {
+            Log.e(TAG, "syncToRestApi: Repository missing")
+            onComplete?.invoke(false)
+            return
+        }
+        repo.syncToJsonBin(tasks.toList()) { success ->
+            if (success) {
+                Log.i(TAG, "syncToRestApi: Success")
+            } else {
+                Log.e(TAG, "syncToRestApi: Failed")
+            }
+            onComplete?.invoke(success)
+        }
+    }
+
     fun loadFromRestApi(onComplete: () -> Unit) {
+        if (!NetworkUtils.isOnline(appContext)) {
+            Log.w(TAG, "loadFromRestApi: Skipped - offline")
+            onComplete()
+            return
+        }
+
         taskRepository?.let { repo ->
-            Log.d(TAG, "loadFromRestApi: Loading tasks from JSONBin")
             repo.loadFromJsonBin { loadedTasks ->
                 if (loadedTasks != null) {
-                    Log.i(TAG, "loadFromRestApi: Loaded ${loadedTasks.size} tasks from REST API")
+                    Log.i(TAG, "loadFromRestApi: Imported ${loadedTasks.size} tasks")
                     tasks.clear()
                     tasks.addAll(loadedTasks)
-                    // Persist locally
-                    saveToLocal()
+                    TaskLocalDataSource.cacheTasks(tasks)
+                    pendingSyncIds.clear()
                 } else {
-                    Log.w(TAG, "loadFromRestApi: Failed to load from REST API")
+                    Log.e(TAG, "loadFromRestApi: Failed to load data")
                 }
                 onComplete()
             }
         } ?: run {
-            Log.w(TAG, "loadFromRestApi: TaskRepository not initialized")
+            Log.e(TAG, "loadFromRestApi: Repository missing")
             onComplete()
         }
     }
 
-    /**
-     * Returns a copy of all tasks in memory
-     *
-     * @return Immutable list of all tasks
-     */
-    fun getAllTasks(): List<Task> {
-        Log.d(TAG, "getAllTasks: Returning ${tasks.size} tasks")
-        return tasks.toList()
-    }
+    fun getAllTasks(): List<Task> = tasks.toList()
 
-    /**
-     * Filters tasks by a specific date (ignores time component)
-     *
-     * @param date The date to filter by
-     * @return List of tasks due on the specified date
-     */
     fun getTasksForDate(date: Date): List<Task> {
         val dateStr = dateFormat.format(date)
-        Log.d(TAG, "getTasksForDate: Filtering tasks for date: $dateStr")
-
-        val filteredTasks = tasks.filter { task ->
-            task.dueDate?.let { dueDate ->
-                dateFormat.format(dueDate) == dateStr
-            } ?: false
-        }
-
-        Log.d(TAG, "getTasksForDate: Found ${filteredTasks.size} tasks for $dateStr")
-        return filteredTasks
+        return tasks.filter { it.dueDate?.let { due -> dateFormat.format(due) == dateStr } ?: false }
     }
 
-    /**
-     * Expose current JSONBin bin ID if available
-     */
-    fun getJsonBinId(): String? {
-        return taskRepository?.getBinId()
-    }
+    fun getJsonBinId(): String? = taskRepository?.getBinId()
 
-    /**
-     * Convenience method to get today's tasks
-     *
-     * @return List of tasks due today
-     */
-    fun getTodayTasks(): List<Task> {
-        Log.d(TAG, "getTodayTasks: Fetching today's tasks")
-        return getTasksForDate(Date())
-    }
+    fun getTodayTasks(): List<Task> = getTasksForDate(Date())
 
-    /**
-     * Updates an existing task in memory and Firestore
-     *
-     * @param updatedTask The task with updated properties
-     */
     fun updateTask(updatedTask: Task) {
-        Log.d(TAG, "updateTask: Updating task ID: ${updatedTask.id}")
         val index = tasks.indexOfFirst { it.id == updatedTask.id }
+        if (index == -1) {
+            Log.w(TAG, "updateTask: Missing ${updatedTask.id}")
+            return
+        }
+        tasks[index] = updatedTask
 
-        if (index != -1) {
-            tasks[index] = updatedTask
-            Log.d(TAG, "updateTask: Task updated in memory at index: $index")
-            // Persist locally
-            saveToLocal()
+        val needsDeferredSync = shouldDeferSync()
+        TaskLocalDataSource.upsert(updatedTask, needsDeferredSync)
+        if (needsDeferredSync) pendingSyncIds.add(updatedTask.id) else pendingSyncIds.remove(updatedTask.id)
 
-            // Sync update to Firestore
-            auth.currentUser?.uid?.let { uid ->
-                Log.d(TAG, "updateTask: Syncing update to Firestore")
-                db.collection("users").document(uid)
-                    .collection("tasks").document(updatedTask.id)
-                    .set(updatedTask)
-                    .addOnSuccessListener {
-                        Log.i(TAG, "updateTask: Task successfully updated in Firestore")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e(TAG, "updateTask: Failed to update task in Firestore", e)
-                    }
-            }
+        if (canSyncNow()) {
+            pushTaskToFirestore(updatedTask)
         } else {
-            Log.w(TAG, "updateTask: Task not found with ID: ${updatedTask.id}")
+            Log.d(TAG, "updateTask: Stored offline -> ${updatedTask.id}")
         }
     }
 
-    /**
-     * Deletes a task from memory and Firestore
-     *
-     * @param taskId The ID of the task to delete
-     */
     fun deleteTask(taskId: String) {
-        Log.d(TAG, "deleteTask: Deleting task ID: $taskId")
-        val removed = tasks.removeAll { it.id == taskId }
-
-        if (removed) {
-            Log.d(TAG, "deleteTask: Task removed from memory")
-            // Persist locally
-            saveToLocal()
-
-            // Delete from Firestore
-            auth.currentUser?.uid?.let { uid ->
-                Log.d(TAG, "deleteTask: Deleting from Firestore")
-                db.collection("users").document(uid)
-                    .collection("tasks").document(taskId)
-                    .delete()
-                    .addOnSuccessListener {
-                        Log.i(TAG, "deleteTask: Task successfully deleted from Firestore")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e(TAG, "deleteTask: Failed to delete task from Firestore", e)
-                    }
-            }
-        } else {
-            Log.w(TAG, "deleteTask: No task found with ID: $taskId")
-        }
-    }
-
-    /**
-     * Toggles the completion status of a task
-     *
-     * @param taskId The ID of the task to toggle
-     */
-    fun toggleTaskCompletion(taskId: String) {
-        Log.d(TAG, "toggleTaskCompletion: Toggling completion for task ID: $taskId")
-        val task = tasks.find { it.id == taskId }
-
-        task?.let {
-            val newStatus = !it.isCompleted
-            Log.d(TAG, "toggleTaskCompletion: Changing completion status to: $newStatus")
-            val updated = it.copy(isCompleted = newStatus)
-            updateTask(updated)
-        } ?: Log.w(TAG, "toggleTaskCompletion: Task not found with ID: $taskId")
-    }
-
-    /**
-     * Loads all tasks for the currently authenticated user from Firestore
-     *
-     * This method clears the in-memory task list and repopulates it from Firestore.
-     * It should be called when the user logs in or when a full refresh is needed.
-     *
-     * @param onComplete Callback function invoked when loading is complete (success or failure)
-     */
-    fun loadTasksForUser(onComplete: (() -> Unit)? = null) {
-        Log.d(TAG, "loadTasksForUser: Starting to load tasks from Firestore")
-        tasks.clear()
-
-        val uid = auth.currentUser?.uid
-        if (uid == null) {
-            Log.w(TAG, "loadTasksForUser: No authenticated user, skipping load")
-            onComplete?.invoke()
+        val canDelete = auth.currentUser == null || canSyncNow()
+        if (!canDelete) {
+            Log.w(TAG, "deleteTask: Cannot delete while offline for signed-in user")
             return
         }
 
-        Log.d(TAG, "loadTasksForUser: Loading tasks for user: $uid")
-        // Query all tasks in the user's tasks subcollection
-        db.collection("users").document(uid).collection("tasks")
+        val removed = tasks.removeAll { it.id == taskId }
+        if (!removed) {
+            Log.w(TAG, "deleteTask: Task $taskId not found")
+            return
+        }
+        TaskLocalDataSource.delete(taskId)
+        pendingSyncIds.remove(taskId)
+        if (auth.currentUser != null) {
+            pushDeleteToFirestore(taskId)
+        }
+    }
+
+    fun toggleTaskCompletion(taskId: String) {
+        val task = tasks.find { it.id == taskId } ?: return
+        if (task.isCompleted) {
+            task.markIncomplete()
+        } else {
+            task.markCompleted()
+        }
+        updateTask(task)
+    }
+
+    fun loadTasksForUser(onComplete: (() -> Unit)? = null) {
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            Log.w(TAG, "loadTasksForUser: No authenticated user, skip remote load")
+            onComplete?.invoke()
+            return
+        }
+        db.collection("users")
+            .document(uid)
+            .collection("tasks")
             .get()
             .addOnSuccessListener { snapshot ->
-                Log.d(TAG, "loadTasksForUser: Successfully retrieved ${snapshot.size()} documents")
-
-                // Convert Firestore documents to Task objects
-                for (doc in snapshot.documents) {
-                    doc.toObject(Task::class.java)?.let { task ->
-                        tasks.add(task)
-                        Log.d(TAG, "loadTasksForUser: Loaded task: ${task.title}")
+                Log.d(TAG, "loadTasksForUser: fetched ${snapshot.size()} docs")
+                snapshot.documents.mapNotNull { it.toObject(Task::class.java) }
+                    .forEach { remoteTask ->
+                        TaskLocalDataSource.upsert(remoteTask, false)
                     }
-                }
-
-                Log.i(TAG, "loadTasksForUser: Successfully loaded ${tasks.size} tasks")
-                // Persist locally as cache
-                saveToLocal()
+                loadFromLocal()
                 onComplete?.invoke()
             }
-            .addOnFailureListener { exception ->
-                Log.e(TAG, "loadTasksForUser: Failed to load tasks", exception)
+            .addOnFailureListener { e ->
+                Log.e(TAG, "loadTasksForUser: Failed to load Firestore data", e)
                 onComplete?.invoke()
             }
     }
 
-    /**
-     * Initializes sample tasks for demonstration purposes
-     *
-     * This method only adds sample tasks if:
-     * 1. No user is authenticated (guest mode)
-     * 2. The task list is currently empty
-     *
-     * Sample tasks help new users understand the app's functionality.
-     */
+    fun syncPendingTasks(onComplete: ((Boolean) -> Unit)? = null) {
+        if (!canSyncNow()) {
+            Log.d(TAG, "syncPendingTasks: No connectivity/auth")
+            onComplete?.invoke(false)
+            return
+        }
+        val pending = TaskLocalDataSource.getPendingSyncTasks()
+        if (pending.isEmpty()) {
+            Log.d(TAG, "syncPendingTasks: Nothing to sync")
+            onComplete?.invoke(true)
+            return
+        }
+
+        val uid = auth.currentUser?.uid ?: return
+        val batch = db.batch()
+        val userRef = db.collection("users").document(uid).collection("tasks")
+        pending.forEach { task ->
+            batch.set(userRef.document(task.id), task)
+        }
+
+        val pendingIds = pending.map { it.id }
+
+        batch.commit()
+            .addOnSuccessListener {
+                Log.i(TAG, "syncPendingTasks: Synced ${pending.size} items")
+                TaskLocalDataSource.markSynced(pendingIds)
+                pendingSyncIds.removeAll(pendingIds)
+                syncToRestApi()
+                onComplete?.invoke(true)
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "syncPendingTasks: Failed", e)
+                onComplete?.invoke(false)
+            }
+    }
+
+    fun canDeleteWhileOffline(): Boolean = auth.currentUser == null || canSyncNow()
+
     fun initializeSampleTasks() {
         if (auth.currentUser == null && tasks.isEmpty()) {
-            Log.d(TAG, "initializeSampleTasks: Creating sample tasks for guest user")
-
             val today = Date()
             val calendar = Calendar.getInstance()
 
-            // Sample task 1: Due today
-            addTask(Task(
-                title = "Review project proposal",
-                description = "Go through the quarterly project proposal and provide feedback",
-                dueDate = today,
-                dueTime = "14:00"
-            ))
-
-            // Sample task 2: Due today
-            addTask(Task(
-                title = "Team meeting preparation",
-                description = "Prepare slides and agenda for tomorrow's team meeting",
-                dueDate = today,
-                dueTime = "16:30"
-            ))
-
-            // Sample task 3: Due tomorrow
+            addTask(
+                Task(
+                    title = "Review project proposal",
+                    description = "Go through the quarterly project proposal and provide feedback",
+                    dueDate = today,
+                    dueTime = "14:00"
+                )
+            )
+            addTask(
+                Task(
+                    title = "Team meeting preparation",
+                    description = "Prepare slides and agenda for tomorrow's team meeting",
+                    dueDate = today,
+                    dueTime = "16:30"
+                )
+            )
             calendar.add(Calendar.DAY_OF_MONTH, 1)
-            addTask(Task(
-                title = "Client presentation",
-                description = "Present the new design concepts to the client",
-                dueDate = calendar.time,
-                dueTime = "10:00"
-            ))
-
-            Log.i(TAG, "initializeSampleTasks: Created 3 sample tasks")
-        } else {
-            Log.d(TAG, "initializeSampleTasks: Skipping - user authenticated or tasks already exist")
+            addTask(
+                Task(
+                    title = "Client presentation",
+                    description = "Present the new design concepts to the client",
+                    dueDate = calendar.time,
+                    dueTime = "10:00"
+                )
+            )
+            Log.i(TAG, "initializeSampleTasks: Seeded demo data")
         }
     }
 }

@@ -138,6 +138,10 @@ These are the latest upgrades we shipped to make EasyPlan feel magical:
 - JSONBin Backup/Restore: Manual Export/Import from Settings with status (Bin ID)
 - Calendar Cleanup: Removed hardcoded items; "Today" now shows only your real tasks
 - Single-Activity Clarity: Kept the fast, simple, view-switched architecture and wired everything correctly
+- Biometric Unlock: Optional fingerprint/face authentication keeps signed-in sessions secure (AndroidX BiometricPrompt).
+- Offline Room Cache: Tasks are stored with Room DB so you can add/complete items offline and sync later.
+- isiZulu Localization: Toggle between English and isiZulu copy directly from Settings without restarting the app.
+- Real-time Alerts: Firebase Cloud Messaging topic subscription delivers push notifications for reminders and backups.
 
 ### 📸 Image placeholders (to be added)
 
@@ -220,12 +224,15 @@ User Action → MainActivity → TaskManager → Repository → Data Sources
 | **UI Framework** | Material Design 3 | Modern, beautiful user interface |
 | **Authentication** | Firebase Auth 22.3.1 | User authentication and management |
 | **Database** | Firebase Firestore 24.10.1 | Cloud NoSQL database |
+| **Offline Cache** | Android Room 2.6.1 | Local persistence + offline sync queue |
 | **Analytics** | Firebase Analytics 21.5.1 | User behavior tracking |
 | **Google Sign-In** | Play Services Auth 20.7.0 | OAuth 2.0 SSO implementation |
+| **Biometrics** | AndroidX Biometric 1.1.0 | Fingerprint/face authentication |
 | **HTTP Client** | Retrofit 2.9.0 | Type-safe REST API client |
 | **JSON Parsing** | GSON 2.10.1 | JSON serialization/deserialization |
 | **Networking** | OkHttp 4.12.0 | HTTP client and interceptor |
 | **REST API** | JSONBin.io | Cloud-based JSON storage and REST API |
+| **Notifications** | Firebase Cloud Messaging (BoM 33.6.0) | Push notifications and topic subscriptions |
 | **CI/CD** | GitHub Actions | Automated testing and builds |
 | **Version Control** | Git & GitHub | Source code management |
 

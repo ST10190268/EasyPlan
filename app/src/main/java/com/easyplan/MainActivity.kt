@@ -1,8 +1,11 @@
 package com.easyplan
 
+import android.Manifest
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -14,8 +17,17 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.easyplan.data.Task
+import com.easyplan.notifications.EasyPlanFirebaseMessagingService
+import com.easyplan.notifications.NotificationUtils
+import com.easyplan.security.BiometricHelper
+import com.easyplan.util.LanguageManager
+import com.easyplan.util.NetworkUtils
+import com.easyplan.util.SettingsManager
 import com.easyplan.util.TaskManager
 import com.easyplan.util.TaskStatistics
 import com.easyplan.util.ThemeUtils
@@ -26,11 +38,13 @@ import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -54,9 +68,103 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "MainActivity"
     }
 
+    private fun switchLanguage(language: LanguageManager.SupportedLanguage) {
+        if (LanguageManager.getSavedLanguage(this) == language) return
+        LanguageManager.applyLanguage(this, language)
+        val label = LanguageManager.getDisplayName(this, language)
+        Toast.makeText(this, getString(R.string.language_updated, label), Toast.LENGTH_SHORT).show()
+        recreate()
+    }
+
+    private fun handleBiometricToggle(isChecked: Boolean) {
+        val biometricSwitch = findViewById<MaterialSwitch>(R.id.switchBiometric)
+        if (isChecked) {
+            if (!BiometricHelper.isBiometricAvailable(this)) {
+                Toast.makeText(this, getString(R.string.biometric_not_available), Toast.LENGTH_LONG).show()
+                biometricSwitch?.isChecked = false
+                return
+            }
+            val prompt = BiometricHelper.createPrompt(this, {
+                BiometricHelper.setEnabled(this, true)
+                Toast.makeText(this, getString(R.string.biometric_enabled), Toast.LENGTH_SHORT).show()
+            }) { error ->
+                Toast.makeText(
+                    this,
+                    error ?: getString(R.string.biometric_enrollment_required),
+                    Toast.LENGTH_LONG
+                ).show()
+                biometricSwitch?.isChecked = false
+            }
+            prompt.authenticate(BiometricHelper.buildPromptInfo(this))
+        } else {
+            BiometricHelper.setEnabled(this, false)
+            Toast.makeText(this, getString(R.string.biometric_disabled), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun handleNotificationToggle(isChecked: Boolean) {
+        val notificationSwitch = findViewById<MaterialSwitch>(R.id.switchNotifications)
+        if (isChecked) {
+            if (shouldRequestNotificationPermission()) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                return
+            }
+            SettingsManager.setNotificationsEnabled(this, true)
+            NotificationUtils.ensureChannels(this)
+            FirebaseMessaging.getInstance()
+                .subscribeToTopic(EasyPlanFirebaseMessagingService.DEFAULT_TOPIC)
+            Toast.makeText(this, getString(R.string.success_notifications_enabled), Toast.LENGTH_SHORT).show()
+        } else {
+            SettingsManager.setNotificationsEnabled(this, false)
+            FirebaseMessaging.getInstance()
+                .unsubscribeFromTopic(EasyPlanFirebaseMessagingService.DEFAULT_TOPIC)
+            Toast.makeText(this, getString(R.string.success_notifications_disabled), Toast.LENGTH_SHORT).show()
+        }
+        notificationSwitch?.isChecked = isChecked
+    }
+
+    private fun shouldRequestNotificationPermission(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun updateOfflineStatusText(textView: TextView?) {
+        val pending = TaskManager.getPendingSyncCount()
+        textView?.text = if (pending == 0) {
+            getString(R.string.offline_sync_complete)
+        } else {
+            getString(R.string.offline_sync_pending, pending)
+        }
+    }
+
     private var selectedDate = Date()
     private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            val notificationSwitch = findViewById<MaterialSwitch>(R.id.switchNotifications)
+            if (granted) {
+                SettingsManager.setNotificationsEnabled(this, true)
+                NotificationUtils.ensureChannels(this)
+                FirebaseMessaging.getInstance()
+                    .subscribeToTopic(EasyPlanFirebaseMessagingService.DEFAULT_TOPIC)
+                notificationSwitch?.isChecked = true
+                Toast.makeText(
+                    this,
+                    getString(R.string.success_notifications_enabled),
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                SettingsManager.setNotificationsEnabled(this, false)
+                notificationSwitch?.isChecked = false
+                Toast.makeText(
+                    this,
+                    getString(R.string.notifications_permission_required),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
 
     // Search and filter state
     private var searchQuery: String = ""
@@ -79,6 +187,7 @@ class MainActivity : AppCompatActivity() {
             updateTasksTabUI()
             // Also sync to REST API after loading from Firestore
             TaskManager.syncToRestApi()
+            updateOfflineStatusText(findViewById(R.id.tvOfflineStatus))
         }
         TaskManager.initializeSampleTasks()
 
@@ -126,6 +235,15 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             true
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        TaskManager.syncPendingTasks {
+            runOnUiThread {
+                updateOfflineStatusText(findViewById(R.id.tvOfflineStatus))
+            }
         }
     }
 
@@ -192,7 +310,9 @@ class MainActivity : AppCompatActivity() {
             // Bind core fields
             taskView.findViewById<TextView>(R.id.tvTaskTitle)?.text = task.title
             taskView.findViewById<TextView>(R.id.tvTaskDescription)?.text = task.description
-            taskView.findViewById<TextView>(R.id.taskTime)?.text = task.dueTime?.let { "Due: $it" } ?: "No time set"
+            taskView.findViewById<TextView>(R.id.taskTime)?.text = task.dueTime?.let {
+                getString(R.string.task_due_time, it)
+            } ?: getString(R.string.task_no_time)
 
             // Category icon
             val categoryIcon = taskView.findViewById<TextView>(R.id.tvCategoryIcon)
@@ -214,6 +334,7 @@ class MainActivity : AppCompatActivity() {
                 TaskManager.toggleTaskCompletion(task.id)
                 updateTasksForSelectedDate()
                 updateTasksTabUI()
+                updateOfflineStatusText(findViewById(R.id.tvOfflineStatus))
             }
 
             container.addView(taskView)
@@ -336,11 +457,14 @@ class MainActivity : AppCompatActivity() {
                 category = category
             )
 
+            val savedOffline = !NetworkUtils.isOnline(this)
             TaskManager.addTask(newTask)
             updateTasksForSelectedDate()
             updateTasksTabUI()
+            updateOfflineStatusText(findViewById(R.id.tvOfflineStatus))
             bottomSheetDialog.dismiss()
-            Toast.makeText(this, "Task added successfully!", Toast.LENGTH_SHORT).show()
+            val messageRes = if (savedOffline) R.string.offline_task_saved else R.string.success_task_created
+            Toast.makeText(this, getString(messageRes), Toast.LENGTH_SHORT).show()
         }
 
         // Cancel
@@ -352,66 +476,106 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSettingsListeners() {
-        // Update chip selection states based on current theme
         val currentTheme = ThemeUtils.getSavedTheme(this)
         findViewById<Chip>(R.id.chipThemeSystem)?.isChecked = currentTheme == ThemeUtils.ThemeMode.SYSTEM
         findViewById<Chip>(R.id.chipThemeLight)?.isChecked = currentTheme == ThemeUtils.ThemeMode.LIGHT
         findViewById<Chip>(R.id.chipThemeDark)?.isChecked = currentTheme == ThemeUtils.ThemeMode.DARK
 
-        // Language chips
-        findViewById<Chip>(R.id.chipEnglish)?.setOnClickListener {
-            Toast.makeText(this, "English selected", Toast.LENGTH_SHORT).show()
-        }
-        findViewById<Chip>(R.id.chipAfrikaans)?.setOnClickListener {
-            Toast.makeText(this, "Afrikaans coming soon", Toast.LENGTH_SHORT).show()
-        }
-        findViewById<Chip>(R.id.chipZulu)?.setOnClickListener {
-            Toast.makeText(this, "isiZulu coming soon", Toast.LENGTH_SHORT).show()
-        }
-
-        // Theme chips
         findViewById<Chip>(R.id.chipThemeSystem)?.setOnClickListener {
             ThemeUtils.saveTheme(this, ThemeUtils.ThemeMode.SYSTEM)
-            Toast.makeText(this, "Using system theme", Toast.LENGTH_SHORT).show()
-            recreate() // Restart activity to apply theme
+            Toast.makeText(this, getString(R.string.theme_system), Toast.LENGTH_SHORT).show()
+            recreate()
         }
         findViewById<Chip>(R.id.chipThemeLight)?.setOnClickListener {
             ThemeUtils.saveTheme(this, ThemeUtils.ThemeMode.LIGHT)
-            Toast.makeText(this, "Light theme applied", Toast.LENGTH_SHORT).show()
-            recreate() // Restart activity to apply theme
+            Toast.makeText(this, getString(R.string.theme_light), Toast.LENGTH_SHORT).show()
+            recreate()
         }
         findViewById<Chip>(R.id.chipThemeDark)?.setOnClickListener {
             ThemeUtils.saveTheme(this, ThemeUtils.ThemeMode.DARK)
-            Toast.makeText(this, "Dark theme applied", Toast.LENGTH_SHORT).show()
-            recreate() // Restart activity to apply theme
+            Toast.makeText(this, getString(R.string.theme_dark), Toast.LENGTH_SHORT).show()
+            recreate()
         }
 
-        // JSONBin status text
-        val tvJsonBinStatus = findViewById<TextView>(R.id.tvJsonBinStatus)
-        val binId = TaskManager.getJsonBinId()
-        tvJsonBinStatus?.text = if (binId.isNullOrEmpty()) "Bin: Not created" else "Bin ID: $binId"
+        val savedLanguage = LanguageManager.getSavedLanguage(this)
+        findViewById<Chip>(R.id.chipEnglish)?.apply {
+            isChecked = savedLanguage == LanguageManager.SupportedLanguage.ENGLISH
+            setOnClickListener { switchLanguage(LanguageManager.SupportedLanguage.ENGLISH) }
+        }
+        findViewById<Chip>(R.id.chipZulu)?.apply {
+            isChecked = savedLanguage == LanguageManager.SupportedLanguage.ZULU
+            setOnClickListener { switchLanguage(LanguageManager.SupportedLanguage.ZULU) }
+        }
 
-        // Export to JSONBin
-        findViewById<com.google.android.material.button.MaterialButton>(R.id.btnExportJsonBin)?.setOnClickListener {
-            Toast.makeText(this, "Exporting to JSONBin...", Toast.LENGTH_SHORT).show()
-            TaskManager.syncToRestApi { success ->
+        val biometricSwitch = findViewById<MaterialSwitch>(R.id.switchBiometric)
+        biometricSwitch?.setOnCheckedChangeListener(null)
+        biometricSwitch?.isChecked = BiometricHelper.isEnabled(this)
+        biometricSwitch?.setOnCheckedChangeListener { _, isChecked ->
+            handleBiometricToggle(isChecked)
+        }
+
+        val notificationSwitch = findViewById<MaterialSwitch>(R.id.switchNotifications)
+        notificationSwitch?.setOnCheckedChangeListener(null)
+        val systemNotificationsEnabled = NotificationManagerCompat.from(this).areNotificationsEnabled()
+        var notificationsEnabled = SettingsManager.isNotificationsEnabled(this)
+        if (!systemNotificationsEnabled && notificationsEnabled) {
+            SettingsManager.setNotificationsEnabled(this, false)
+            notificationsEnabled = false
+        }
+        notificationSwitch?.isChecked = notificationsEnabled && systemNotificationsEnabled
+        if (notificationsEnabled && systemNotificationsEnabled) {
+            FirebaseMessaging.getInstance()
+                .subscribeToTopic(EasyPlanFirebaseMessagingService.DEFAULT_TOPIC)
+        }
+        notificationSwitch?.setOnCheckedChangeListener { _, isChecked ->
+            handleNotificationToggle(isChecked)
+        }
+
+        val offlineStatus = findViewById<TextView>(R.id.tvOfflineStatus)
+        updateOfflineStatusText(offlineStatus)
+        findViewById<MaterialButton>(R.id.btnOfflineSync)?.setOnClickListener {
+            TaskManager.syncPendingTasks { success ->
                 runOnUiThread {
-                    val idNow = TaskManager.getJsonBinId()
-                    tvJsonBinStatus?.text = if (idNow.isNullOrEmpty()) "Bin: Not created" else "Bin ID: $idNow"
-                    Toast.makeText(this, if (success) "Export complete" else "Export failed", Toast.LENGTH_SHORT).show()
+                    updateOfflineStatusText(offlineStatus)
+                    val msg = if (success) R.string.offline_sync_complete else R.string.offline_sync_failed
+                    Toast.makeText(this, getString(msg), Toast.LENGTH_SHORT).show()
                 }
             }
         }
 
-        // Import from JSONBin
-        findViewById<com.google.android.material.button.MaterialButton>(R.id.btnImportJsonBin)?.setOnClickListener {
-            Toast.makeText(this, "Importing from JSONBin...", Toast.LENGTH_SHORT).show()
+        val tvJsonBinStatus = findViewById<TextView>(R.id.tvJsonBinStatus)
+        val binId = TaskManager.getJsonBinId()
+        tvJsonBinStatus?.text = if (binId.isNullOrEmpty()) {
+            getString(R.string.jsonbin_status_unknown)
+        } else {
+            getString(R.string.jsonbin_status_value, binId)
+        }
+
+        findViewById<MaterialButton>(R.id.btnExportJsonBin)?.setOnClickListener {
+            Toast.makeText(this, getString(R.string.jsonbin_exporting), Toast.LENGTH_SHORT).show()
+            TaskManager.syncToRestApi { success ->
+                runOnUiThread {
+                    val idNow = TaskManager.getJsonBinId()
+                    tvJsonBinStatus?.text = if (idNow.isNullOrEmpty()) {
+                        getString(R.string.jsonbin_status_unknown)
+                    } else {
+                        getString(R.string.jsonbin_status_value, idNow)
+                    }
+                    val msg = if (success) R.string.jsonbin_export_success else R.string.jsonbin_export_failed
+                    Toast.makeText(this, getString(msg), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        findViewById<MaterialButton>(R.id.btnImportJsonBin)?.setOnClickListener {
+            Toast.makeText(this, getString(R.string.jsonbin_importing), Toast.LENGTH_SHORT).show()
             TaskManager.loadFromRestApi {
                 runOnUiThread {
                     updateTasksForSelectedDate()
                     updateTasksTabUI()
                     setupStatistics()
-                    Toast.makeText(this, "Import complete", Toast.LENGTH_SHORT).show()
+                    updateOfflineStatusText(findViewById(R.id.tvOfflineStatus))
+                    Toast.makeText(this, getString(R.string.jsonbin_import_success), Toast.LENGTH_SHORT).show()
                 }
             }
         }

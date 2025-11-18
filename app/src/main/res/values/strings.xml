@@ -43,6 +43,7 @@
     <string name="calendar_tab">Calendar</string>
     <string name="settings_tab">Settings</string>
     <string name="statistics_tab">Statistics</string>
+    <string name="profile_tab">Profile</string>
     <string name="add_task">Add Task</string>
     <string name="edit_task">Edit Task</string>
     <string name="delete_task">Delete Task</string>
@@ -50,6 +51,8 @@
     <string name="task_description_hint">Description (optional)</string>
     <string name="due_date">Due Date</string>
     <string name="due_time">Due Time</string>
+    <string name="task_due_time">Due: %1$s</string>
+    <string name="task_no_time">No time set</string>
     <string name="save_task">Save</string>
     <string name="cancel">Cancel</string>
     <string name="no_tasks">No tasks yet</string>
@@ -94,17 +97,48 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_system">System</string>
-    <string name="language_section">Language (Coming Soon)</string>
+    <string name="language_section">Language</string>
+    <string name="language_description">Switch between English and isiZulu</string>
     <string name="language_english">English</string>
-    <string name="language_afrikaans">Afrikaans (Coming Soon)</string>
-    <string name="language_zulu">isiZulu (Coming Soon)</string>
-    <string name="biometric_section">Security (Coming Soon)</string>
-    <string name="fingerprint_auth">Fingerprint Authentication (Coming Soon)</string>
-    <string name="notifications_section">Notifications (Coming Soon)</string>
-    <string name="push_notifications">Push Notifications (Coming Soon)</string>
+    <string name="language_afrikaans">Afrikaans</string>
+    <string name="language_zulu">isiZulu</string>
+    <string name="language_updated">Language updated to %1$s</string>
+    <string name="biometric_section">Security</string>
+    <string name="fingerprint_auth">Biometric unlock</string>
+    <string name="biometric_description">Use fingerprint or face unlock to protect EasyPlan</string>
+    <string name="biometric_prompt_title">Unlock EasyPlan</string>
+    <string name="biometric_prompt_subtitle">Authenticate to continue</string>
+    <string name="biometric_prompt_description">We use device biometrics to secure your account</string>
+    <string name="biometric_not_available">Biometric hardware unavailable on this device</string>
+    <string name="biometric_enrollment_required">Set up biometrics in device settings first</string>
+    <string name="biometric_enabled">Biometric login enabled</string>
+    <string name="biometric_disabled">Biometric login disabled</string>
+    <string name="notifications_section">Notifications</string>
+    <string name="push_notifications">Task alerts</string>
+    <string name="notifications_description">Receive reminders and real-time task updates</string>
+    <string name="notifications_permission_required">Enable notifications in Android Settings to receive alerts</string>
+    <string name="notifications_permission_rationale">EasyPlan needs notification permission to alert you about tasks.</string>
+    <string name="offline_section">Offline mode</string>
+    <string name="offline_description">Work without data. We will sync as soon as you reconnect.</string>
+    <string name="offline_sync_button">Sync offline tasks</string>
+    <string name="offline_sync_pending">%1$d pending item(s)</string>
+    <string name="offline_sync_complete">Offline tasks synced</string>
+    <string name="offline_sync_failed">Sync failed. We will retry automatically.</string>
+    <string name="offline_task_saved">Task saved offline. We will sync when you are online.</string>
+    <string name="offline_delete_not_supported">Go online to delete tasks.</string>
     <string name="account_section">Account</string>
     <string name="sign_out">Sign Out</string>
     <string name="coming_soon">Coming Soon</string>
+    <string name="settings_help_section">Help &amp; Cloud</string>
+    <string name="jsonbin_export_button">Export to JSONBin</string>
+    <string name="jsonbin_import_button">Import from JSONBin</string>
+    <string name="jsonbin_status_unknown">Bin: Not created</string>
+    <string name="jsonbin_status_value">Bin ID: %1$s</string>
+    <string name="jsonbin_exporting">Exporting to JSONBin...</string>
+    <string name="jsonbin_importing">Importing from JSONBin...</string>
+    <string name="jsonbin_export_success">Export complete</string>
+    <string name="jsonbin_export_failed">Export failed</string>
+    <string name="jsonbin_import_success">Import complete</string>
 
     <!-- ============================================ -->
     <!-- Error Messages -->
@@ -132,6 +166,8 @@
     <string name="success_task_updated">Task updated</string>
     <string name="success_task_deleted">Task deleted</string>
     <string name="success_password_reset">Password reset email sent</string>
+    <string name="success_notifications_enabled">Notifications enabled</string>
+    <string name="success_notifications_disabled">Notifications disabled</string>
 
     <!-- ============================================ -->
     <!-- Content Descriptions (Accessibility) -->
@@ -143,5 +179,7 @@
     <string name="cd_calendar_icon">Calendar</string>
     <string name="cd_settings_icon">Settings</string>
     <string name="cd_google_icon">Google Sign-In</string>
+    <string name="notification_channel_tasks">EasyPlan Alerts</string>
+    <string name="notification_channel_tasks_description">Due date reminders and task updates</string>
 
 </resources>

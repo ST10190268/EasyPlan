@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import com.easyplan.security.BiometricHelper
 import com.easyplan.util.ThemeUtils
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -166,17 +167,18 @@ class LoginActivity : AppCompatActivity() {
 
                     if (task.isSuccessful) {
                         Log.i(TAG, "Login successful for user: ${auth.currentUser?.uid}")
-                        // Navigate to main app screen
-                        val intent = Intent(this, MainActivity::class.java)
-                        val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.slide_up)
-                        startActivity(intent, options.toBundle())
-                        finish() // Close login activity
+                        navigateToMain()
                     } else {
                         Log.e(TAG, "Login failed", task.exception)
                         Toast.makeText(this, task.exception?.localizedMessage ?: "Login failed", Toast.LENGTH_LONG).show()
                     }
                 }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        maybeUnlockWithBiometrics()
     }
 
     /**
@@ -206,16 +208,48 @@ class LoginActivity : AppCompatActivity() {
                     Log.i(TAG, "firebaseAuthWithGoogle: Sign-In successful")
                     val user = auth.currentUser
                     Toast.makeText(this, "Welcome ${user?.displayName}!", Toast.LENGTH_SHORT).show()
-
-                    // Navigate to main activity
-                    val intent = Intent(this, MainActivity::class.java)
-                    val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.slide_up)
-                    startActivity(intent, options.toBundle())
-                    finish()
+                    navigateToMain()
                 } else {
                     Log.e(TAG, "firebaseAuthWithGoogle: Sign-In failed", task.exception)
                     Toast.makeText(this, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
             }
+    }
+
+    private fun navigateToMain() {
+        val intent = Intent(this, MainActivity::class.java)
+        val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.slide_up)
+        startActivity(intent, options.toBundle())
+        finish()
+    }
+
+    private fun maybeUnlockWithBiometrics() {
+        val currentUser = auth.currentUser ?: return
+        if (!BiometricHelper.shouldPromptForBiometrics(this)) {
+            Log.d(TAG, "maybeUnlockWithBiometrics: Biometrics disabled, continuing as ${currentUser.uid}")
+            navigateToMain()
+            return
+        }
+
+        if (!BiometricHelper.isBiometricAvailable(this)) {
+            Log.w(TAG, "maybeUnlockWithBiometrics: Hardware unavailable, disabling preference")
+            BiometricHelper.setEnabled(this, false)
+            Toast.makeText(this, getString(R.string.biometric_not_available), Toast.LENGTH_LONG).show()
+            navigateToMain()
+            return
+        }
+
+        val prompt = BiometricHelper.createPrompt(this, {
+            Log.d(TAG, "maybeUnlockWithBiometrics: Authenticated for ${currentUser.uid}")
+            navigateToMain()
+        }) { error ->
+            Log.e(TAG, "maybeUnlockWithBiometrics: Failed ${error ?: "unknown error"}")
+            Toast.makeText(
+                this,
+                error ?: getString(R.string.biometric_enrollment_required),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        prompt.authenticate(BiometricHelper.buildPromptInfo(this))
     }
 }
